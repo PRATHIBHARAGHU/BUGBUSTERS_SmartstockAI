@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+{% block title_suffix %} | Inventory{% endblock %}
+{% block page_title %}Inventory{% endblock %}
+{% block page_sub %}All products · stock levels · status{% endblock %}
+
+{% block topbar_actions %}
+  <a href="{% url 'upload_csv' %}" class="btn btn-ghost btn-sm">⬆ Upload CSV</a>
+{% endblock %}
+
+{% block content %}
+
+<!-- Filters -->
+<div class="filters-bar">
+  <form method="get" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+    <input type="text" name="search" value="{{ search }}" placeholder="Search products..." class="search-input">
+    <select name="category" class="filter-select">
+      <option value="">All Categories</option>
+      {% for cat in categories %}
+        <option value="{{ cat.id }}" {% if selected_cat == cat.id|stringformat:"s" %}selected{% endif %}>{{ cat.name }}</option>
+      {% endfor %}
+    </select>
+    <select name="store" class="filter-select">
+      <option value="">All Stores</option>
+      {% for store in stores %}
+        <option value="{{ store.id }}" {% if selected_store == store.id|stringformat:"s" %}selected{% endif %}>{{ store.name }}</option>
+      {% endfor %}
+    </select>
+    <select name="status" class="filter-select">
+      <option value="">All Status</option>
+      <option value="ok"  {% if selected_status == 'ok' %}selected{% endif %}>✅ OK</option>
+      <option value="low" {% if selected_status == 'low' %}selected{% endif %}>⚠️ Low</option>
+      <option value="out" {% if selected_status == 'out' %}selected{% endif %}>❌ Out of Stock</option>
+    </select>
+    <button type="submit" class="btn btn-teal btn-sm">Filter</button>
+    {% if search or selected_cat or selected_store or selected_status %}
+      <a href="{% url 'inventory' %}" class="btn btn-ghost btn-sm">✕ Clear</a>
+    {% endif %}
+  </form>
+</div>
+
+<!-- Table -->
+<div class="table-card">
+  <div class="table-header">
+    <h3>{{ products.count }} product{{ products.count|pluralize }}</h3>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>Product</th>
+        <th>SKU</th>
+        <th>Category</th>
+        <th>Store</th>
+        <th>Stock</th>
+        <th>Level</th>
+        <th>Status</th>
+        <th>Price</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in products %}
+      <tr>
+        <td><a href="{% url 'product_detail' p.pk %}">{{ p.name }}</a></td>
+        <td style="font-family:var(--mono);font-size:12px;color:var(--text3)">{{ p.sku }}</td>
+        <td>{{ p.category.name }}</td>
+        <td style="font-size:12px;color:var(--text3)">{{ p.store.name }}</td>
+        <td style="font-family:var(--mono);font-weight:600;color:var(--text)">{{ p.current_stock }}</td>
+        <td>
+          <div class="stock-bar-wrap">
+            <div class="stock-bar-bg">
+              <div class="stock-bar-fill fill-{{ p.stock_status }}" style="width:{{ p.stock_percentage }}%"></div>
+            </div>
+            <span class="stock-pct">{{ p.stock_percentage }}%</span>
+          </div>
+        </td>
+        <td>
+          {% if p.stock_status == 'ok' %}
+            <span class="badge badge-ok">✓ OK</span>
+          {% elif p.stock_status == 'low' %}
+            <span class="badge badge-low">⚠ Low</span>
+          {% elif p.stock_status == 'out_of_stock' %}
+            <span class="badge badge-out">✕ Out</span>
+          {% elif p.stock_status == 'overstock' %}
+            <span class="badge badge-over">↑ Over</span>
+          {% endif %}
+        </td>
+        <td style="font-family:var(--mono);font-size:12px">₹{{ p.unit_price }}</td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="8">
+          <div class="empty-state" style="padding:40px">
+            <div class="icon">🔍</div>
+            <h3>No products found</h3>
+            <p>Try adjusting your filters</p>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}

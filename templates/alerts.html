@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+{% block title_suffix %} | Alerts{% endblock %}
+{% block page_title %}Restock Alerts{% endblock %}
+{% block page_sub %}AI-generated alerts with explainable reasoning{% endblock %}
+
+{% block topbar_actions %}
+  <form method="post" action="{% url 'run_ml' %}">{% csrf_token %}
+    <button type="submit" class="btn btn-teal btn-sm">🤖 Refresh AI Alerts</button>
+  </form>
+{% endblock %}
+
+{% block content %}
+
+<!-- Tabs -->
+<div class="tabs">
+  <a href="#pending"  class="tab active" onclick="showTab('pending',this)">🔴 Pending ({{ pending_count }})</a>
+  <a href="#ordered"  class="tab"        onclick="showTab('ordered',this)">🔵 Ordered ({{ ordered|length }})</a>
+  <a href="#resolved" class="tab"        onclick="showTab('resolved',this)">✅ Resolved</a>
+</div>
+
+<!-- Pending -->
+<div id="tab-pending">
+  {% for alert in pending %}
+  <div class="alert-card {% if alert.predicted_days_until_stockout is not None and alert.predicted_days_until_stockout <= 3 %}urgent{% endif %}">
+    <div class="alert-top">
+      <div>
+        <div class="alert-product">
+          <a href="{% url 'product_detail' alert.product.pk %}" style="color:inherit;text-decoration:none">
+            {{ alert.product.name }}
+          </a>
+        </div>
+        <div class="alert-store">{{ alert.product.store.name }} · {{ alert.product.category.name }}</div>
+      </div>
+      <span class="badge badge-pending">⚠ Pending</span>
+    </div>
+
+    <!-- Explainable AI reason -->
+    <div class="alert-reason">
+      <strong style="color:var(--teal);font-size:11px;text-transform:uppercase;letter-spacing:.05em">🧠 AI Reasoning</strong><br>
+      {{ alert.reason }}
+    </div>
+
+    <div class="alert-meta">
+      <span>📦 Current: <strong style="color:var(--text)">{{ alert.current_stock }}</strong></span>
+      <span>➕ Restock: <strong style="color:var(--teal)">{{ alert.recommended_qty }} units</strong></span>
+      {% if alert.predicted_days_until_stockout is not None %}
+        <span>⏱ Stockout in: <strong style="color:{% if alert.predicted_days_until_stockout <= 3 %}var(--red){% else %}var(--amber){% endif %}">{{ alert.predicted_days_until_stockout }}d</strong></span>
+      {% endif %}
+      <span style="margin-left:auto;color:var(--text3);font-size:11px">{{ alert.alert_date|date:"d M Y" }}</span>
+    </div>
+
+    <div class="alert-actions">
+      <form method="post" action="{% url 'resolve_alert' alert.pk %}">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="ordered">
+        <button class="btn btn-amber btn-sm" type="submit">📋 Mark Ordered</button>
+      </form>
+      <form method="post" action="{% url 'resolve_alert' alert.pk %}">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="resolved">
+        <button class="btn btn-ghost btn-sm" type="submit">✓ Resolve</button>
+      </form>
+    </div>
+  </div>
+  {% empty %}
+  <div class="empty-state">
+    <div class="icon">✅</div>
+    <h3>All clear!</h3>
+    <p>No pending restock alerts. Run the AI engine to refresh.</p>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- Ordered -->
+<div id="tab-ordered" style="display:none">
+  {% for alert in ordered %}
+  <div class="alert-card" style="border-left-color:var(--blue)">
+    <div class="alert-top">
+      <div>
+        <div class="alert-product">{{ alert.product.name }}</div>
+        <div class="alert-store">{{ alert.product.store.name }}</div>
+      </div>
+      <span class="badge badge-ordered">📋 Ordered</span>
+    </div>
+    <div class="alert-meta">
+      <span>📦 Was: {{ alert.current_stock }}</span>
+      <span>➕ Ordered: {{ alert.recommended_qty }} units</span>
+    </div>
+    <div class="alert-actions">
+      <form method="post" action="{% url 'resolve_alert' alert.pk %}">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="resolved">
+        <button class="btn btn-ghost btn-sm" type="submit">✓ Mark Resolved</button>
+      </form>
+    </div>
+  </div>
+  {% empty %}
+  <div class="empty-state"><div class="icon">📋</div><h3>No ordered alerts</h3></div>
+  {% endfor %}
+</div>
+
+<!-- Resolved -->
+<div id="tab-resolved" style="display:none">
+  {% for alert in resolved %}
+  <div class="alert-card resolved-card">
+    <div class="alert-top">
+      <div>
+        <div class="alert-product">{{ alert.product.name }}</div>
+        <div class="alert-store">{{ alert.product.store.name }}</div>
+      </div>
+      <span class="badge badge-resolved">✓ Resolved</span>
+    </div>
+    <div class="alert-meta">
+      <span>Was: {{ alert.current_stock }} → +{{ alert.recommended_qty }} units</span>
+      <span style="margin-left:auto">{{ alert.alert_date|date:"d M Y" }}</span>
+    </div>
+  </div>
+  {% empty %}
+  <div class="empty-state"><div class="icon">📁</div><h3>No resolved alerts yet</h3></div>
+  {% endfor %}
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function showTab(name, el) {
+  ['pending','ordered','resolved'].forEach(t => {
+    document.getElementById('tab-'+t).style.display = 'none';
+  });
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-'+name).style.display = 'block';
+  el.classList.add('active');
+  event.preventDefault();
+}
+</script>
+{% endblock %}

@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% block title_suffix %} | {{ product.name }}{% endblock %}
+{% block page_title %}{{ product.name }}{% endblock %}
+{% block page_sub %}{{ product.sku }} · {{ product.category.name }} · {{ product.store.name }}{% endblock %}
+
+{% block topbar_actions %}
+  <a href="{% url 'inventory' %}" class="btn btn-ghost btn-sm">← Back</a>
+{% endblock %}
+
+{% block content %}
+
+<div class="detail-grid">
+  <!-- Info card -->
+  <div class="info-card">
+    <div style="margin-bottom:16px">
+      {% if product.stock_status == 'ok' %}
+        <span class="badge badge-ok" style="font-size:13px;padding:5px 12px">✓ In Stock</span>
+      {% elif product.stock_status == 'low' %}
+        <span class="badge badge-low" style="font-size:13px;padding:5px 12px">⚠ Low Stock</span>
+      {% elif product.stock_status == 'out_of_stock' %}
+        <span class="badge badge-out" style="font-size:13px;padding:5px 12px">✕ Out of Stock</span>
+      {% endif %}
+    </div>
+
+    <div class="info-row"><span class="info-label">SKU</span><span class="info-value">{{ product.sku }}</span></div>
+    <div class="info-row"><span class="info-label">Category</span><span class="info-value">{{ product.category.name }}</span></div>
+    <div class="info-row"><span class="info-label">Store</span><span class="info-value">{{ product.store.name }}</span></div>
+    <div class="info-row"><span class="info-label">Unit Price</span><span class="info-value">₹{{ product.unit_price }}</span></div>
+    <div class="info-row"><span class="info-label">Current Stock</span><span class="info-value" style="color:var(--teal)">{{ product.current_stock }}</span></div>
+    <div class="info-row"><span class="info-label">Reorder Point</span><span class="info-value" style="color:var(--amber)">{{ product.reorder_point }}</span></div>
+    <div class="info-row"><span class="info-label">Max Stock</span><span class="info-value">{{ product.max_stock }}</span></div>
+    <div class="info-row"><span class="info-label">Sold (30d)</span><span class="info-value" style="color:var(--green)">{{ total_sold_30d }}</span></div>
+
+    <div style="margin-top:16px">
+      <div class="kpi-label" style="margin-bottom:6px">Stock Level</div>
+      <div class="stock-bar-wrap">
+        <div class="stock-bar-bg" style="height:10px">
+          <div class="stock-bar-fill fill-{{ product.stock_status }}" style="width:{{ product.stock_percentage }}%;height:100%"></div>
+        </div>
+        <span class="stock-pct">{{ product.stock_percentage }}%</span>
+      </div>
+    </div>
+
+    <!-- 7-day forecast summary -->
+    {% if forecasts %}
+    <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border)">
+      <div class="kpi-label" style="margin-bottom:8px">📈 Next 7-Day Forecast</div>
+      {% for f in forecasts %}
+      <div style="display:flex;justify-content:space-between;font-size:12px;padding:3px 0;color:var(--text2)">
+        <span>{{ f.forecast_date|date:"d M" }}</span>
+        <span style="font-family:var(--mono);color:var(--amber)">~{{ f.predicted_sales|floatformat:0 }} units</span>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Sales chart -->
+  <div>
+    <div class="chart-card" style="margin-bottom:16px">
+      <div class="chart-title">📊 Sales Last 30 Days</div>
+      <canvas id="salesChart" height="100"></canvas>
+    </div>
+
+    <!-- Recent alerts for this product -->
+    {% if alerts %}
+    <div class="table-card">
+      <div class="table-header"><h3>🔔 Recent Alerts</h3></div>
+      <table>
+        <thead>
+          <tr><th>Date</th><th>Stock at alert</th><th>Recommended</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+          {% for a in alerts %}
+          <tr>
+            <td style="font-family:var(--mono);font-size:12px">{{ a.alert_date|date:"d M Y" }}</td>
+            <td style="font-family:var(--mono)">{{ a.current_stock }}</td>
+            <td style="font-family:var(--mono);color:var(--teal)">+{{ a.recommended_qty }}</td>
+            <td><span class="badge badge-{{ a.status }}">{{ a.status }}</span></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+new Chart(document.getElementById('salesChart'), {
+  type: 'bar',
+  data: {
+    labels: {{ chart_labels|safe }},
+    datasets: [{
+      label: 'Units Sold',
+      data: {{ chart_values|safe }},
+      backgroundColor: 'rgba(26,171,138,0.6)',
+      borderColor: '#1aab8a',
+      borderWidth: 1,
+      borderRadius: 4,
+    }]
+  },
+  options: {
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { grid: { color: '#2a3444' }, ticks: { maxTicksLimit: 10 } },
+      y: { grid: { color: '#2a3444' }, beginAtZero: true }
+    }
+  }
+});
+</script>
+{% endblock %}

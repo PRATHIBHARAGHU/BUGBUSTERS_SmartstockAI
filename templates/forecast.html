@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+{% block title_suffix %} | Forecast{% endblock %}
+{% block page_title %}Demand Forecast{% endblock %}
+{% block page_sub %}AI-powered 7-day sales predictions per product{% endblock %}
+
+{% block content %}
+
+<div class="forecast-select-wrap">
+  <form method="get" style="display:flex;gap:12px;align-items:center">
+    <label style="font-size:13px;color:var(--text2);font-weight:500">Select Product:</label>
+    <select name="product" class="filter-select" style="min-width:280px" onchange="this.form.submit()">
+      <option value="">— Choose a product —</option>
+      {% for p in products %}
+        <option value="{{ p.pk }}" {% if selected_id == p.pk %}selected{% endif %}>
+          {{ p.name }} ({{ p.store.name }})
+        </option>
+      {% endfor %}
+    </select>
+  </form>
+</div>
+
+{% if sel_product %}
+
+<!-- Product summary bar -->
+<div style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap">
+  <div class="kpi-card teal" style="flex:1;min-width:140px;padding:14px 16px">
+    <div class="kpi-label">Current Stock</div>
+    <div class="kpi-value" style="font-size:24px">{{ sel_product.current_stock }}</div>
+  </div>
+  <div class="kpi-card amber" style="flex:1;min-width:140px;padding:14px 16px">
+    <div class="kpi-label">Reorder Point</div>
+    <div class="kpi-value" style="font-size:24px">{{ sel_product.reorder_point }}</div>
+  </div>
+  <div class="kpi-card blue" style="flex:1;min-width:140px;padding:14px 16px">
+    <div class="kpi-label">Status</div>
+    <div class="kpi-value" style="font-size:18px;text-transform:capitalize">{{ sel_product.stock_status }}</div>
+  </div>
+</div>
+
+<!-- Forecast chart -->
+<div class="chart-card" style="margin-bottom:20px">
+  <div class="chart-title">
+    📈 Sales History + 7-Day AI Forecast — {{ sel_product.name }}
+    <span style="font-size:11px;color:var(--text3);font-weight:400;margin-left:8px">
+      — Actual &nbsp;&nbsp; ⋯ Forecast
+    </span>
+  </div>
+  <canvas id="forecastChart" height="80"></canvas>
+</div>
+
+<!-- Forecast table -->
+<div class="table-card">
+  <div class="table-header"><h3>7-Day Forecast Details</h3></div>
+  <table>
+    <thead>
+      <tr><th>Date</th><th>Predicted Units</th><th>Est. Revenue</th><th>Note</th></tr>
+    </thead>
+    <tbody>
+      {% for f in forecasts %}
+      <tr>
+        <td style="font-family:var(--mono)">{{ f.forecast_date }}</td>
+        <td style="font-family:var(--mono);color:var(--teal);font-weight:600">{{ f.predicted_sales|floatformat:0 }}</td>
+        <td style="font-family:var(--mono)">₹{{ f.predicted_sales|floatformat:0|add:"0" }}</td>
+        <td style="font-size:12px;color:var(--text3)">AI prediction</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="4" style="text-align:center;color:var(--text3);padding:20px">No forecast data. Run the AI engine first.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% else %}
+<div class="empty-state" style="margin-top:60px">
+  <div class="icon">📈</div>
+  <h3>Select a product to see its forecast</h3>
+  <p style="margin-top:8px">Choose any product from the dropdown above to view AI-powered demand predictions.</p>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+{% if sel_product %}
+<script>
+const labels   = {{ chart_labels|safe }};
+const actual   = {{ chart_actual|safe }};
+const forecast = {{ chart_forecast|safe }};
+
+// Pad forecast array with nulls for the actual-data region
+const todayIdx = actual.filter(v => v !== null).length;
+const forecastPadded = Array(todayIdx).fill(null).concat(forecast);
+// Make sure last actual & first forecast overlap
+if (todayIdx > 0 && forecast.length > 0) {
+  forecastPadded[todayIdx - 1] = actual[todayIdx - 1];
+}
+
+new Chart(document.getElementById('forecastChart'), {
+  type: 'line',
+  data: {
+    labels,
+    datasets: [
+      {
+        label: 'Actual Sales',
+        data: actual,
+        borderColor: '#1aab8a',
+        backgroundColor: 'rgba(26,171,138,.08)',
+        tension: 0.3,
+        fill: true,
+        pointBackgroundColor: '#1aab8a',
+        pointRadius: 4,
+        spanGaps: false,
+      },
+      {
+        label: 'AI Forecast',
+        data: forecastPadded,
+        borderColor: '#e3b341',
+        backgroundColor: 'rgba(227,179,65,.06)',
+        borderDash: [5,4],
+        tension: 0.3,
+        fill: true,
+        pointBackgroundColor: '#e3b341',
+        pointRadius: 4,
+        spanGaps: false,
+      }
+    ]
+  },
+  options: {
+    plugins: {
+      legend: { labels: { color: '#8b949e', font: { size: 12 } } },
+      tooltip: { mode: 'index', intersect: false }
+    },
+    scales: {
+      x: { grid: { color: '#2a3444' } },
+      y: { grid: { color: '#2a3444' }, beginAtZero: true }
+    }
+  }
+});
+</script>
+{% endif %}
+{% endblock %}
