@@ -34,5 +34,40 @@ SmartStock_MVP/
 ├── manage.py
 └── README.md
 
+##  Overview
+SmartStock AI is an intelligent inventory management system designed to track products, manage stock using SKU-based identification, and support future AI-driven demand prediction.
 
 ---
+
+##  Screenshots
+
+<img width="1914" height="1012" alt="image" src="https://github.com/user-attachments/assets/9d60e04d-246b-42b2-afa3-24c12286ddaf" />
+Dashboard
+
+<img width="1906" height="911" alt="image" src="https://github.com/user-attachments/assets/9a44ff90-b81f-4b77-a3f2-2d86f95190cc" />
+Uploading the CSV file for data
+
+<img width="1387" height="1078" alt="image" src="https://github.com/user-attachments/assets/35588218-f7a9-4347-972f-47d20bb39ed8" />
+Admin page
+
+
+##  SKU(Stock Keeping Unit) System
+
+Each product is assigned a unique Stock Keeping Unit (SKU) which acts as an identifier for tracking inventory efficiently and avoiding duplication.
+
+##  Architecture
+
+- Django Backend
+- SQLite Database
+- Django Admin Panel
+- Modular app structure (core app)
+
+##  Future Enhancements
+
+- AI-based demand forecasting
+- Low stock alerts
+- REST API integration
+- Dashboard analytics
+- Cloud deployment
+
+  
