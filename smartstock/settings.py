@@ -1,10 +1,11 @@
 from pathlib import Path
+import os
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-smartstock-hackathon-2026-key'
+DEBUG = os.environ.get('DEBUG') == 'True'
 
-DEBUG = True
+SECRET_KEY = os.environ.get('SECRET_KEY')
 
 ALLOWED_HOSTS = ['*']
 
