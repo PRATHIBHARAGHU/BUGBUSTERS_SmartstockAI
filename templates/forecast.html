@@ -83,9 +83,12 @@
 {% block extra_js %}
 {% if sel_product %}
 <script>
-const labels   = {{ chart_labels|safe }};
-const actual   = {{ chart_actual|safe }};
+const labels = {{ chart_labels|safe }};
+const actual = {{ chart_actual|safe }};
 const forecast = {{ chart_forecast|safe }};
+
+const splitIndex = actual.length;
+const forecastPadded = Array(splitIndex).fill(null).concat(forecast);
 
 // Pad forecast array with nulls for the actual-data region
 const todayIdx = actual.filter(v => v !== null).length;
@@ -136,6 +139,7 @@ new Chart(document.getElementById('forecastChart'), {
     }
   }
 });
+
 </script>
 {% endif %}
 {% endblock %}
