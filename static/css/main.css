@@ -88,7 +88,11 @@ body {
   transition: all .15s;
 }
 
-.nav-item:hover { color: var(--text); background: var(--bg3); }
+.nav-item:hover {
+  background-color: #34495e;
+  cursor: pointer;
+}
+
 
 .nav-item.active {
   color: var(--teal);
