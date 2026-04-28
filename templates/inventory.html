@@ -95,6 +95,13 @@
           </div>
         </td>
       </tr>
+
+        {% if products %}
+          <!-- existing table -->
+        {% else %}
+          <p>No products available.</p>
+        {% endif %}
+
       {% endfor %}
     </tbody>
   </table>
