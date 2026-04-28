@@ -41,10 +41,10 @@
     </div>
 
     <div class="alert-meta">
-      <span>📦 Current: <strong style="color:var(--text)">{{ alert.current_stock }}</strong></span>
-      <span>➕ Restock: <strong style="color:var(--teal)">{{ alert.recommended_qty }} units</strong></span>
+      <span> Current: <strong style="color:var(--text)">{{ alert.current_stock }}</strong></span>
+      <span> Restock: <strong style="color:var(--teal)">{{ alert.recommended_qty }} units</strong></span>
       {% if alert.predicted_days_until_stockout is not None %}
-        <span>⏱ Stockout in: <strong style="color:{% if alert.predicted_days_until_stockout <= 3 %}var(--red){% else %}var(--amber){% endif %}">{{ alert.predicted_days_until_stockout }}d</strong></span>
+        <span> Stockout in: <strong style="color:{% if alert.predicted_days_until_stockout <= 3 %}var(--red){% else %}var(--amber){% endif %}">{{ alert.predicted_days_until_stockout }}d</strong></span>
       {% endif %}
       <span style="margin-left:auto;color:var(--text3);font-size:11px">{{ alert.alert_date|date:"d M Y" }}</span>
     </div>
@@ -83,8 +83,8 @@
       <span class="badge badge-ordered">📋 Ordered</span>
     </div>
     <div class="alert-meta">
-      <span>📦 Was: {{ alert.current_stock }}</span>
-      <span>➕ Ordered: {{ alert.recommended_qty }} units</span>
+      <span> Was: {{ alert.current_stock }}</span>
+      <span> Ordered: {{ alert.recommended_qty }} units</span>
     </div>
     <div class="alert-actions">
       <form method="post" action="{% url 'resolve_alert' alert.pk %}">

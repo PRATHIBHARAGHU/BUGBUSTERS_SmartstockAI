@@ -44,7 +44,7 @@
     <!-- 7-day forecast summary -->
     {% if forecasts %}
     <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border)">
-      <div class="kpi-label" style="margin-bottom:8px">📈 Next 7-Day Forecast</div>
+      <div class="kpi-label" style="margin-bottom:8px"> Next 7-Day Forecast</div>
       {% for f in forecasts %}
       <div style="display:flex;justify-content:space-between;font-size:12px;padding:3px 0;color:var(--text2)">
         <span>{{ f.forecast_date|date:"d M" }}</span>
@@ -58,14 +58,14 @@
   <!-- Sales chart -->
   <div>
     <div class="chart-card" style="margin-bottom:16px">
-      <div class="chart-title">📊 Sales Last 30 Days</div>
+      <div class="chart-title"> Sales Last 30 Days</div>
       <canvas id="salesChart" height="100"></canvas>
     </div>
 
     <!-- Recent alerts for this product -->
     {% if alerts %}
     <div class="table-card">
-      <div class="table-header"><h3>🔔 Recent Alerts</h3></div>
+      <div class="table-header"><h3> Recent Alerts</h3></div>
       <table>
         <thead>
           <tr><th>Date</th><th>Stock at alert</th><th>Recommended</th><th>Status</th></tr>

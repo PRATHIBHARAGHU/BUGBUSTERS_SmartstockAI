@@ -13,38 +13,38 @@
 <!-- ── Sidebar ───────────────────────────────────────── -->
 <aside class="sidebar">
   <div class="sidebar-logo">
-    <div class="brand">⚡ SmartStock AI</div>
+    <div class="brand"> SmartStock AI</div>
     <div class="sub">Inventory Intelligence</div>
   </div>
 
   <nav>
     <div class="nav-section">Main</div>
     <a href="{% url 'dashboard' %}"      class="nav-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
-      <span class="icon">📊</span><span>Dashboard</span>
+      <span class="icon"></span><span>Dashboard</span>
     </a>
     <a href="{% url 'inventory' %}"      class="nav-item {% if request.resolver_match.url_name == 'inventory' %}active{% endif %}">
-      <span class="icon">📦</span><span>Inventory</span>
+      <span class="icon"></span><span>Inventory</span>
     </a>
     <a href="{% url 'alerts' %}"         class="nav-item {% if request.resolver_match.url_name == 'alerts' %}active{% endif %}">
-      <span class="icon">🔔</span><span>Alerts</span>
+      <span class="icon"></span><span>Alerts</span>
       {% if pending_alert_count %}<span class="nav-badge">{{ pending_alert_count }}</span>{% endif %}
     </a>
-    <a href="{% url 'forecast' %}"       class="nav-item {% if request.resolver_match.url_name == 'forecast' %}active{% endif %}">
-      <span class="icon">📈</span><span>Forecast</span>
+    <a href="#"       class="nav-item {% if request.resolver_match.url_name == 'forecast' %}active{% endif %}">
+      <span class="icon"></span><span>Forecast</span>
     </a>
 
     <div class="nav-section">Tools</div>
     <a href="{% url 'upload_csv' %}"     class="nav-item {% if request.resolver_match.url_name == 'upload_csv' %}active{% endif %}">
-      <span class="icon">⬆️</span><span>Upload CSV</span>
+      <span class="icon">⬆</span><span>Upload CSV</span>
     </a>
     <form method="post" action="{% url 'run_ml' %}" style="margin:0">
       {% csrf_token %}
-      <button type="submit" class="nav-item" style="width:100%;text-align:left;background:none;border:none;cursor:pointer;color:inherit">
-        <span class="icon">🤖</span><span>Run AI Engine</span>
+      <button type="submit" class="nav-item" style="width:100%;text-align:left;background:none;border:none;cursor:pointer;color:inherit" onclick="alert('AI module coming soon!')" >
+        <span class="icon"></span><span>Run AI Engine</span>
       </button>
     </form>
     <a href="/admin/"                    class="nav-item">
-      <span class="icon">⚙️</span><span>Admin</span>
+      <span class="icon"></span><span>Admin</span>
     </a>
   </nav>
 
