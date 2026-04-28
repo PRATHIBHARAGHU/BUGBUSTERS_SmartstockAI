@@ -171,8 +171,6 @@ def forecast(request):
         )
 
         for f in forecasts:
-            chart_labels.append(str(f.forecast_date))
-            chart_actual.append(None)
             chart_forecast.append(round(f.predicted_sales, 1))
 
     return render(request, 'forecast.html', {
@@ -184,6 +182,8 @@ def forecast(request):
         'chart_actual': chart_actual,
         'chart_forecast': chart_forecast,
     })
+    forecast_labels = [str(f.forecast_date) for f in forecasts]
+    chart_labels = chart_labels + forecast_labels
 
 # ─────────────────────────────────────────────
 # PRODUCT DETAIL
@@ -214,6 +214,7 @@ def run_ml_view(request):
             messages.success(request, "ML Engine executed successfully.")
         except Exception as e:
             messages.error(request, str(e))
+    recent_alerts = RestockAlert.objects.filter(status='pending').select_related('product').order_by('-alert_date')[:5]
 
     return redirect('alerts')
 
