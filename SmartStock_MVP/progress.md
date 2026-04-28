@@ -55,28 +55,28 @@ This document tracks the development progress of the SmartStock AI project in st
 - UI improvements for dashboard
 
 ---
-###Checkpoint 4 – Current Progress Update
+### Checkpoint 4 – Current Progress Update
 
-##Ongoing Development:
+## Ongoing Development:
 - Improved navigation system across core pages (Dashboard, Inventory, Upload, Alerts)
 - Added placeholder modules for AI Engine and Forecast pages
 - Fixed multiple routing issues and stabilized UI flow
 
-##Integration & Sync Work:
+## Integration & Sync Work:
 - Working on syncing updates between Replit and local VS Code environment
 - Managing GitHub commits across multiple development environments (Replit + Local)
 
-##Deployment Status:
+## Deployment Status:
 - Live demo running on Replit for basic access
 - GitHub repository continuously updated with latest changes
 - Initial Render deployment attempted; currently being debugged
 
-##Current Focus:
+## Current Focus:
 - Resolving remaining routing issues
 - Ensuring proper sync between environments
 - Preparing project for stable deployment
 
-##Next Steps:
+## Next Steps:
 - Fix remaining broken routes (AI & Forecast)
 - Complete deployment setup on Replit
 - Continue integrating backend improvements
