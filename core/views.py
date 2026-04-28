@@ -209,6 +209,7 @@ def product_detail(request, pk):
 # RUN ML ENGINE — FIXED working directory
 # ─────────────────────────────────────────────
 def run_ml_view(request):
+    WRITE_ALLOWED = ['ForecastResult', 'RestockAlert']
     if request.method == 'POST':
         try:
             # FIX: get the project root directory so ml/run_ml.py is found correctly
