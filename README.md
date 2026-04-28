@@ -82,4 +82,9 @@ Each product is assigned a unique Stock Keeping Unit (SKU) which acts as an iden
 - Dashboard analytics
 - Cloud deployment
 
+
+## LIVE DEMO
+ Access the project here:
+ https://bugbusters-smartstock-ai-1--prathibhar070.replit.app/
+ 
   
