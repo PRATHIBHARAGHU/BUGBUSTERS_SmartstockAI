@@ -43,19 +43,24 @@ SmartStock_MVP/
 
 ##  Overview
 SmartStock AI is an intelligent inventory management system designed to track products, manage stock using SKU-based identification, and support future AI-driven demand prediction.
+Planned models: Linear Regression / Time Series Forecasting
 
 ---
 
 ##  Screenshots
 
 <img width="1914" height="1012" alt="image" src="https://github.com/user-attachments/assets/9d60e04d-246b-42b2-afa3-24c12286ddaf" />
-Dashboard
+Dashboard UI
 
 <img width="1906" height="911" alt="image" src="https://github.com/user-attachments/assets/9a44ff90-b81f-4b77-a3f2-2d86f95190cc" />
-Uploading the CSV file for data
+CSV Upload
 
 <img width="1387" height="1078" alt="image" src="https://github.com/user-attachments/assets/35588218-f7a9-4347-972f-47d20bb39ed8" />
-Admin page
+Admin panel
+
+
+## Flow of the Project
+“Upload CSV → System processes → Inventory updated → Admin monitors”
 
 
 ##  SKU(Stock Keeping Unit) System
