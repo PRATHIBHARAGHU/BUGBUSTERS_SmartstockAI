@@ -136,14 +136,54 @@ def resolve_alert(request, pk):
 # FORECAST
 # ─────────────────────────────────────────────
 def forecast(request):
+    from datetime import date, timedelta
     products = Product.objects.all()
     selected = request.GET.get('product')
+    sel_product = None
+    forecasts = []
+    chart_labels = []
+    chart_actual = []
+    chart_forecast = []
+
+    if selected:
+        sel_product = get_object_or_404(Product, pk=selected)
+
+        # Last 14 days actual sales
+        since = date.today() - timedelta(days=14)
+        actual_qs = (
+            SalesRecord.objects
+            .filter(product=sel_product, date__gte=since)
+            .order_by('date')
+        )
+        actual_dict = {str(r.date): r.quantity_sold for r in actual_qs}
+
+        # Build last 14 days labels + actual values
+        for i in range(14):
+            d = str(since + timedelta(days=i))
+            chart_labels.append(d)
+            chart_actual.append(actual_dict.get(d, 0))
+
+        # Next 7 days forecast from DB
+        forecasts = (
+            ForecastResult.objects
+            .filter(product=sel_product, forecast_date__gte=date.today())
+            .order_by('forecast_date')[:7]
+        )
+
+        for f in forecasts:
+            chart_labels.append(str(f.forecast_date))
+            chart_actual.append(None)
+            chart_forecast.append(round(f.predicted_sales, 1))
 
     return render(request, 'forecast.html', {
         'products': products,
         'selected_id': int(selected) if selected else None,
+        'sel_product': sel_product,
+        'forecasts': forecasts,
+        'chart_labels': chart_labels,
+        'chart_actual': chart_actual,
+        'chart_forecast': chart_forecast,
     })
-
 
 # ─────────────────────────────────────────────
 # PRODUCT DETAIL
