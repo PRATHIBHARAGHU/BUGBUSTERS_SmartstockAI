@@ -276,6 +276,8 @@ def upload_csv(request):
             f"Upload complete: {product_count} products, {sales_count} sales imported."
         )
 
+        messages.success(request, "CSV uploaded successfully!")
+
         return redirect('inventory')
     import logging
     logger = logging.getLogger(__name__)
