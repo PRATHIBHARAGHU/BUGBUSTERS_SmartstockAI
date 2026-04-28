@@ -277,5 +277,8 @@ def upload_csv(request):
         )
 
         return redirect('inventory')
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.info("CSV upload started")
 
     return render(request, 'upload_csv.html')
