@@ -56,7 +56,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'smartstock',
         'USER': 'root',
-        'PASSWORD': 'root1234',   # ← change to YOUR mysql root password
+        'PASSWORD': 'Mysql@1234',  
         'HOST': 'localhost',
         'PORT': '3306',
     }
