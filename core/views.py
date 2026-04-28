@@ -1,5 +1,6 @@
 import csv
 import io
+import os
 import subprocess
 import sys
 from datetime import date, timedelta
@@ -33,7 +34,6 @@ def dashboard(request):
         .values('product__category__name')
         .annotate(total=Sum('revenue'))
     )
-
     cat_labels = [r['product__category__name'] for r in cat_revenue]
     cat_values = [float(r['total']) for r in cat_revenue]
 
@@ -43,7 +43,6 @@ def dashboard(request):
         .annotate(total=Sum('quantity_sold'))
         .order_by('date')
     )
-
     day_labels = [str(r['date']) for r in daily_sales]
     day_values = [r['total'] for r in daily_sales]
 
@@ -53,9 +52,15 @@ def dashboard(request):
         .annotate(total_qty=Sum('quantity_sold'))
         .order_by('-total_qty')[:5]
     )
-
     top_labels = [p['product__name'] for p in top_products]
     top_values = [p['total_qty'] for p in top_products]
+
+    # FIX: recent alerts for dashboard panel
+    recent_alerts = (
+        RestockAlert.objects.filter(status='pending')
+        .select_related('product')
+        .order_by('-alert_date')[:5]
+    )
 
     return render(request, 'dashboard.html', {
         'total_products': total_products,
@@ -69,6 +74,7 @@ def dashboard(request):
         'day_values': day_values,
         'top_labels': top_labels,
         'top_values': top_values,
+        'recent_alerts': recent_alerts,
     })
 
 
@@ -133,10 +139,9 @@ def resolve_alert(request, pk):
 
 
 # ─────────────────────────────────────────────
-# FORECAST
+# FORECAST  — FIXED
 # ─────────────────────────────────────────────
 def forecast(request):
-    from datetime import date, timedelta
     products = Product.objects.all()
     selected = request.GET.get('product')
     sel_product = None
@@ -157,20 +162,23 @@ def forecast(request):
         )
         actual_dict = {str(r.date): r.quantity_sold for r in actual_qs}
 
-        # Build last 14 days labels + actual values
+        # Build 14-day actual labels + values
         for i in range(14):
             d = str(since + timedelta(days=i))
             chart_labels.append(d)
             chart_actual.append(actual_dict.get(d, 0))
 
         # Next 7 days forecast from DB
-        forecasts = (
+        forecasts = list(
             ForecastResult.objects
             .filter(product=sel_product, forecast_date__gte=date.today())
             .order_by('forecast_date')[:7]
         )
 
+        # FIX: append forecast dates to labels BEFORE return
         for f in forecasts:
+            chart_labels.append(str(f.forecast_date))
+            chart_actual.append(None)
             chart_forecast.append(round(f.predicted_sales, 1))
 
     return render(request, 'forecast.html', {
@@ -182,15 +190,13 @@ def forecast(request):
         'chart_actual': chart_actual,
         'chart_forecast': chart_forecast,
     })
-    forecast_labels = [str(f.forecast_date) for f in forecasts]
-    chart_labels = chart_labels + forecast_labels
+
 
 # ─────────────────────────────────────────────
 # PRODUCT DETAIL
 # ─────────────────────────────────────────────
 def product_detail(request, pk):
     product = get_object_or_404(Product, pk=pk)
-
     sales = SalesRecord.objects.filter(product=product).order_by('-date')[:30]
 
     return render(request, 'product_detail.html', {
@@ -200,65 +206,73 @@ def product_detail(request, pk):
 
 
 # ─────────────────────────────────────────────
-# RUN ML ENGINE
+# RUN ML ENGINE — FIXED working directory
 # ─────────────────────────────────────────────
 def run_ml_view(request):
     if request.method == 'POST':
         try:
+            # FIX: get the project root directory so ml/run_ml.py is found correctly
+            project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            ml_script = os.path.join(project_root, 'ml', 'run_ml.py')
+
             result = subprocess.run(
-                [sys.executable, 'ml/run_ml.py'],
+                [sys.executable, ml_script],
                 capture_output=True,
                 text=True,
-                timeout=120
+                timeout=120,
+                cwd=project_root,   # FIX: set working directory explicitly
             )
-            messages.success(request, "ML Engine executed successfully.")
+
+            if result.returncode == 0:
+                alert_count = RestockAlert.objects.filter(status='pending').count()
+                messages.success(
+                    request,
+                    f"✅ AI Engine ran successfully! {alert_count} restock alerts generated."
+                )
+            else:
+                # Show the actual error so you can debug
+                messages.error(request, f"AI Engine error: {result.stderr[:300]}")
+
+        except subprocess.TimeoutExpired:
+            messages.error(request, "AI Engine timed out. Try again.")
         except Exception as e:
-            messages.error(request, str(e))
-    recent_alerts = RestockAlert.objects.filter(status='pending').select_related('product').order_by('-alert_date')[:5]
+            messages.error(request, f"Could not run AI Engine: {str(e)}")
 
     return redirect('alerts')
 
 
 # ─────────────────────────────────────────────
-# FIXED CSV UPLOAD (IMPORTANT)
-# Supports BOTH:
-# 1. Product import
-# 2. Sales import
+# CSV UPLOAD — cleaned up (no duplicate message)
 # ─────────────────────────────────────────────
 def upload_csv(request):
     if request.method == 'POST' and request.FILES.get('csv_file'):
 
         file = request.FILES['csv_file']
-        decoded = file.read().decode('utf-8-sig')  # FIX: handles encoding issues
+        decoded = file.read().decode('utf-8-sig')
         reader = csv.DictReader(io.StringIO(decoded))
 
         product_count = 0
         sales_count = 0
 
         for row in reader:
-
-            # Normalize keys (VERY IMPORTANT FIX)
             row = {k.strip().lower(): v for k, v in row.items() if k}
 
             # ─── PRODUCT IMPORT ───
             if 'name' in row and 'price' in row and ('stock' in row or 'quantity' in row) and 'sku' in row:
-
                 Product.objects.update_or_create(
                     sku=row['sku'].strip(),
                     defaults={
                         'name': row['name'].strip(),
                         'unit_price': float(row['price']),
-                        'current_stock': int(row['stock']),
+                        'current_stock': int(row.get('stock', row.get('quantity', 0))),
                     }
                 )
                 product_count += 1
 
             # ─── SALES IMPORT ───
             elif 'sku' in row and 'date' in row and 'quantity_sold' in row:
-
                 try:
                     product = Product.objects.get(sku=row['sku'].strip())
-
                     SalesRecord.objects.update_or_create(
                         product=product,
                         date=row['date'],
@@ -268,20 +282,13 @@ def upload_csv(request):
                         }
                     )
                     sales_count += 1
-
                 except Product.DoesNotExist:
                     continue
 
         messages.success(
             request,
-            f"Upload complete: {product_count} products, {sales_count} sales imported."
+            f"✅ Upload complete: {product_count} products, {sales_count} sales records imported."
         )
-
-        messages.success(request, "CSV uploaded successfully!")
-
         return redirect('inventory')
-    import logging
-    logger = logging.getLogger(__name__)
-    logger.info("CSV upload started")
 
     return render(request, 'upload_csv.html')
