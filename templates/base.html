@@ -29,7 +29,7 @@
       <span class="icon"></span><span>Alerts</span>
       {% if pending_alert_count %}<span class="nav-badge">{{ pending_alert_count }}</span>{% endif %}
     </a>
-    <a href="#"       class="nav-item {% if request.resolver_match.url_name == 'forecast' %}active{% endif %}">
+    <a href="{% url 'forecast' %}"       class="nav-item {% if request.resolver_match.url_name == 'forecast' %}active{% endif %}">
       <span class="icon"></span><span>Forecast</span>
     </a>
 
