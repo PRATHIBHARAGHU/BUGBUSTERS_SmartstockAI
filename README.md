@@ -86,5 +86,17 @@ Each product is assigned a unique Stock Keeping Unit (SKU) which acts as an iden
 ## LIVE DEMO
  Access the project here:
  https://bugbusters-smartstock-ai-1--prathibhar070.replit.app/
+
+ ## Snippets from Live demo with data generated
+ 
+ <img width="1912" height="1029" alt="image" src="https://github.com/user-attachments/assets/e2b7bea5-2f8e-4d56-8c9d-c71b45f42f19" />
+### Dashboard
+
+<img width="1900" height="969" alt="image" src="https://github.com/user-attachments/assets/a9deca83-620b-48a2-b667-6750d08d7e4b" />
+### Inventory
+
+<img width="1891" height="1020" alt="image" src="https://github.com/user-attachments/assets/312f8a2d-ec4f-4fd4-964b-f00b3b844a4f" />
+### Alerts with Explainable AI
+
  
   
