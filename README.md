@@ -1,5 +1,13 @@
 #  SmartStock AI
 
+![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)
+![Django](https://img.shields.io/badge/Django-4.x-green.svg)
+![AI Ready](https://img.shields.io/badge/AI-Ready-purple.svg)
+![Backend](https://img.shields.io/badge/Backend-Django-darkgreen.svg)
+![Status](https://img.shields.io/badge/Project-Active-success.svg)
+![License](https://img.shields.io/badge/License-MIT-yellow.svg)
+
+
 An AI-powered intelligent inventory management system that helps businesses track stock, manage products efficiently, and predict demand using data-driven insights.
 
 ---
